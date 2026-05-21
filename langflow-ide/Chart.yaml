@@ -1,0 +1,23 @@
+apiVersion: v2
+name: langflow-ide
+description: Stable Langflow deployment chart for Kubernetes
+type: application
+
+version: 0.2.0
+appVersion: "1.0.19"
+
+keywords:
+  - langflow
+  - ai
+  - llm
+  - workflow
+
+home: https://github.com/langflow-ai/langflow
+
+sources:
+  - https://github.com/langflow-ai/langflow
+
+maintainers:
+  - name: Suraj
+
+dependencies: []

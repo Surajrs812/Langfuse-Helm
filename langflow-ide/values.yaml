@@ -1,0 +1,212 @@
+imagePullSecrets: []
+
+nameOverride: "langflow-service"
+fullnameOverride: "langflow-service"
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+ingress:
+  enabled: false
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths: []
+  tls: []
+
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 1000
+  allowPrivilegeEscalation: false
+  runAsGroup: 1000
+
+podSecurityContext:
+  fsGroup: 1000
+  runAsUser: 1000
+  runAsNonRoot: true
+  runAsGroup: 1000
+
+langflow:
+  global:
+    image:
+      tag: "1.0.19"
+
+  backend:
+    replicaCount: 1
+
+    service:
+      type: ClusterIP
+      port: 7860
+
+    backendOnly: true
+    numWorkers: 1
+
+    image:
+      repository: langflowai/langflow
+      imagePullPolicy: IfNotPresent
+      tag: "1.0.19"
+
+    command:
+      - python
+      - -m
+      - langflow
+      - run
+      - --host
+      - 0.0.0.0
+      - --backend-only
+
+    resources:
+      requests:
+        cpu: "1"
+        memory: 2Gi
+      limits:
+        cpu: "2"
+        memory: 4Gi
+
+    probe:
+      failureThreshold: 15
+      periodSeconds: 20
+      timeoutSeconds: 20
+      initialDelaySeconds: 180
+
+    env:
+      - name: LANGFLOW_PORT
+        value: "7860"
+
+      - name: LANGFLOW_NUM_WORKERS
+        value: "1"
+
+      - name: LANGFLOW_AUTO_LOGIN
+        value: "false"
+
+      - name: LANGFLOW_UPDATE_STARTER_PROJECTS
+        value: "false"
+
+      - name: PYTHONUNBUFFERED
+        value: "1"
+
+    nodeSelector: {}
+
+    tolerations: []
+
+    affinity: {}
+
+    podAnnotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "9090"
+      prometheus.io/path: "/metrics"
+
+    securityContext:
+      capabilities:
+        drop:
+          - ALL
+      readOnlyRootFilesystem: false
+      runAsNonRoot: true
+      runAsUser: 1000
+      allowPrivilegeEscalation: false
+      runAsGroup: 1000
+
+    podSecurityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsNonRoot: true
+      runAsGroup: 1000
+
+    externalDatabase:
+      enabled: false
+      driver: {}
+      host: {}
+      port: {}
+      user: {}
+      password: {}
+      database: {}
+
+    volumes:
+      - name: flows
+        emptyDir: {}
+
+      - name: tmp
+        emptyDir: {}
+
+      - name: data
+        emptyDir: {}
+
+      - name: db
+        emptyDir: {}
+
+    volumeMounts:
+      - name: flows
+        mountPath: /app/flows
+
+      - name: tmp
+        mountPath: /tmp
+
+      - name: data
+        mountPath: /app/data
+
+      - name: db
+        mountPath: /app/db
+
+    sqlite:
+      enabled: true
+
+      volume:
+        size: "5Gi"
+        existingStorageClassName: "default"
+        storageClass: {}
+
+  frontend:
+    enabled: true
+
+    replicaCount: 1
+
+    service:
+      type: ClusterIP
+      port: 8080
+
+    image:
+      repository: langflowai/langflow-frontend
+      imagePullPolicy: IfNotPresent
+      tag: "1.0.19"
+
+    resources:
+      requests:
+        cpu: "300m"
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
+
+    probe:
+      failureThreshold: 10
+      periodSeconds: 20
+      timeoutSeconds: 10
+      initialDelaySeconds: 60
+
+    nodeSelector: {}
+
+    tolerations: []
+
+    affinity: {}
+
+    podAnnotations: {}
+
+    volumes:
+      - name: tmp
+        emptyDir: {}
+
+    volumeMounts:
+      - name: tmp
+        mountPath: /tmp
+
+secretProvider:
+  enabled: false
+
+postgresql:
+  enabled: false
